@@ -37,7 +37,7 @@ public class Friend_DAO {
 		}
 		
 		
-		// 전체에서 친구 추가할 아이디 검색.
+			// 친구 추가 가능한지 여부.
 				public int search_member(String search_id,String id) {//rhruf,qudcks0703
 					int result = 0;
 					try {
@@ -45,9 +45,9 @@ public class Friend_DAO {
 						String sql = "select id from member where id= ?";
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1, search_id);				
-						rs = pstmt.executeQuery();
-						if(rs.next()) {
-							if(rs.getString("id").equals(search_id)) { //아이디 일단 존재함.
+						rs = pstmt.executeQuery();//아이디 존재여부
+						if(rs.next()) { //아이디 10개면 10번 반복
+							if(rs.getString("id").equals(search_id)) { //아이디 일단 존재함. //뺀아이디랑 검색아이디랑같으지확
 								String sql1="select id from friend where friend_id=? and id=?";
 								pstmt=conn.prepareStatement(sql1);
 								pstmt.setString(1, id);
@@ -97,6 +97,28 @@ public class Friend_DAO {
 					return 0;
 				}
 				
+				//친구이거나 친추왔거나 친추를 걸었는지 체크기능
+				public int friend_check(String id, String search_id) {
+					try {
+						conn=ds.getConnection();
+						String sql2 = "select * from friend where (id=?  and friend_id =?) or (friend_id=?  and id =?)";
+						pstmt =conn.prepareStatement(sql2);
+						pstmt.setString(1, id);
+						pstmt.setString(2, search_id);
+						pstmt.setString(3, id);
+						pstmt.setString(4, search_id);
+						rs=pstmt.executeQuery();
+						if(rs.next()) {
+							return 1;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}finally {
+						close(conn, pstmt, rs);
+					}
+					return 0;
+				}
+				
 				// 친구 목록 보기
 				public List list_firend(String id) {
 					List list=new ArrayList();
@@ -124,18 +146,29 @@ public class Friend_DAO {
 					}
 					return list;
 				}
-				// 내가 신청한 친구 목록
-				public List list_firend_me(String id) {
+				
+				//친구 목록 뽑아오기
+				public List list_firend_search(String id,String search) {
 					List list=new ArrayList();
 					try {
 						conn=ds.getConnection();
-						String sql = "select friend_id from friend where id =? and my_num = 1 and friend_num = 0";
-						pstmt = conn.prepareStatement(sql);
+						String sql1 = "select id from friend where friend_id=? and id like ? and my_num = 1 and friend_num = 1";
+						pstmt = conn.prepareStatement(sql1);
 						pstmt.setString(1, id);
+						pstmt.setString(2,"%"+search+"%");
+						rs = pstmt.executeQuery();
+						while(rs.next()) {
+							list.add(rs.getString("id"));
+						}
+						String sql2 = "select friend_id from friend where  id =? and friend_id like ? and my_num = 1 and friend_num = 1";
+						pstmt = conn.prepareStatement(sql2);
+						pstmt.setString(1,id);
+						pstmt.setString(2,"%"+search+"%");
 						rs = pstmt.executeQuery();
 						while(rs.next()) {
 							list.add(rs.getString("friend_id"));
 						}
+						
 					} catch (Exception e) {
 						e.printStackTrace();
 					}finally {
@@ -143,6 +176,33 @@ public class Friend_DAO {
 					}
 					return list;
 				}
+				
+				//친구 찾기 목록
+				public List list_search(String id,String search) {
+					List list=new ArrayList();
+					try {
+						conn=ds.getConnection();
+						String sql1 = "select id from member where id like ? and id != ? and id not in (select friend_id from friend where id=?) and id not in (select id from friend where friend_id=?)";
+						pstmt = conn.prepareStatement(sql1);
+						pstmt.setString(1,"%"+search+"%");
+						pstmt.setString(2, id);
+						pstmt.setString(3, id);
+						pstmt.setString(4, id);
+						rs = pstmt.executeQuery();
+						while(rs.next()) {
+							list.add(rs.getString("id"));
+						}
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					}finally {
+						close(conn, pstmt, rs);
+					}
+					return list;
+				}
+				
+				
+
 				// 친구 나를 신청한 친구 목록
 				public List list_firend_you(String id) {
 					List list=new ArrayList();
@@ -180,7 +240,26 @@ public class Friend_DAO {
 					return 0;
 				}
 				
-				// 친구 삭제, 친구요청 취소
+				// 친구추가 온 갯수
+				public int count_friend(String id) {
+					try {
+						conn = ds.getConnection();
+						String sql = "select count(*) from friend where friend_id=? and my_num=1 and friend_num=0";
+						pstmt = conn.prepareStatement(sql);
+						pstmt.setString(1, id);
+						rs=pstmt.executeQuery();
+						if(rs.next()) {
+							return rs.getInt("count(*)");
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}finally {
+						close(conn, pstmt, rs);
+					}
+					return 0;
+				}
+				
+				//친구 거절~
 				public int  no_friend(String id,String friend) {
 					try {
 						conn = ds.getConnection();
@@ -197,62 +276,47 @@ public class Friend_DAO {
 					return 0;
 				}		
 				
+				//친구 삭제
+				public int  friend_delete(String id,String friend) {
+					try {
+						conn = ds.getConnection();
+						String sql = "delete from friend where (id=? and friend_id=?) or (friend_id=? and id=?)";
+						pstmt = conn.prepareStatement(sql);
+						pstmt.setString(1, friend);
+						pstmt.setString(2, id);
+						pstmt.setString(3, friend);
+						pstmt.setString(4, id);
+						return pstmt.executeUpdate();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}finally {
+						close(conn, pstmt, rs);
+					}
+					return 0;
+				}		
+				
 				/**
-				// 서로 친구인 목록에서 검색하기
-				public List search_friend(String id) {
+								// 내가 신청한 친구 목록
+				public List list_firend_me(String id) {
+					List list=new ArrayList();
 					try {
-						conn = ds.getConnection();
-						String sql = "select id from friend where id = ? and my_num =1 and friend_num =1";
+						conn=ds.getConnection();
+						String sql = "select friend_id from friend where id =? and my_num = 1 and friend_num = 0";
 						pstmt = conn.prepareStatement(sql);
 						pstmt.setString(1, id);
 						rs = pstmt.executeQuery();
-						if(rs.next()) {
-							id = rs.getString("friend_id");
+						while(rs.next()) {
+							list.add(rs.getString("friend_id"));
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 					}finally {
 						close(conn, pstmt, rs);
 					}
-					return id;
+					return list;
 				}
-				// 내가 신청한 친구 목록 
-				public String search_friend_me(String id) {
-					try {
-						conn = ds.getConnection();
-						String sql = "select id from friend where id = ? and my_num =1 and friend_num =0";
-						pstmt = conn.prepareStatement(sql);
-						pstmt.setString(1, id);
-						rs = pstmt.executeQuery();
-						if(rs.next()) {
-							id = rs.getString("friend_id");
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}finally {
-						close(conn, pstmt, rs);
-					}
-					return id;
-				}
-				// 나를 신청한 친구 목록
-				public String search_friend_you(String search_id) {
-					String id = null;
-					try {
-						conn = ds.getConnection();
-						String sql = "select id from friend where id = ? and my_num =0 and friend_num =1";
-						pstmt = conn.prepareStatement(sql);
-						pstmt.setString(1, search_id);
-						rs = pstmt.executeQuery();
-						if(rs.next()) {
-							id = rs.getString("friend_id");
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}finally {
-						close(conn, pstmt, rs);
-					}
-					return id;
-				}
+								// 친구 삭제, 친구요청 취소
+
 		*/
 		
 		

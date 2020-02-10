@@ -132,6 +132,27 @@ public class Likes_DAO {
 			return list;
 		}
 		
+		//누가 좋아요 눌렀는지 확인함
+		public List wholike(int num) {
+			List list=new ArrayList();
+			try {
+				conn=ds.getConnection();
+				String sql="select id,rownum r from likes where num=? and count=1 order by r desc";
+				pstmt=conn.prepareStatement(sql);
+				pstmt.setInt(1, num);
+				rs=pstmt.executeQuery(); 
+				while(rs.next()) {
+					list.add(rs.getString("id"));
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("좋아요 정보 가져오기 실패");
+			}finally {
+				close(conn, pstmt, rs);
+			}
+			return list;
+		}
+		
 		
 		
 		//전체 닫기

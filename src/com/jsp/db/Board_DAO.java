@@ -29,6 +29,7 @@ public class Board_DAO {
 				e.printStackTrace();
 			}
 		}
+		
 		// private 싱글톤 객체 가져오기
 		public static Board_DAO getInstance() {
 			return bdao;
@@ -82,6 +83,7 @@ public class Board_DAO {
 			int count=0;
 			try{
 				conn=ds.getConnection();
+				//게시물과 좋아요=1(좋아요 누른상태)인 수를 찾는 sql
 				String sql1="select count(*) from likes where num=? and count=1";
 				pstmt=conn.prepareStatement(sql1);
 				pstmt.setInt(1,num);
@@ -103,11 +105,13 @@ public class Board_DAO {
 			}
 			System.out.println("좋아요갯수세기 실패");
 			return 0;
-		}	
+		}
 		
+		//조회수 올리기
 		public void hits(int num) {
 			try{
 				conn=ds.getConnection();
+				//readcount(=조회수)를 한개씩 올려주는 sql문
 				String sql="update board set readcount=readcount+1 where num=?";
 				pstmt=conn.prepareStatement(sql);
 				pstmt.setInt(1,num);
@@ -119,14 +123,28 @@ public class Board_DAO {
 				close(conn, pstmt, rs);
 			}
 		}		
+		
 		//게시글 삭제 하기
 		public int delete(Board_DTO dto) {
 			try{
 				System.out.println("게시글 삭제 실행");
 				conn=ds.getConnection();
-				String sql="delete from board where num=?";
-				pstmt=conn.prepareStatement(sql);
+				
+				//게시글 삭제 전에 댓글 삭제.
+				String sql1="delete from comment1 where num=?";
+				pstmt=conn.prepareStatement(sql1);
 				pstmt.setInt(1,dto.getNum());
+				pstmt.executeUpdate();
+				//게시글 삭제 전에 좋아요 삭제
+				String sql2="delete from likes where num=?";
+				pstmt=conn.prepareStatement(sql2);
+				pstmt.setInt(1,dto.getNum());
+				pstmt.executeUpdate();
+				//최종 게시글 삭제
+				String sql3="delete from board where num=?";
+				pstmt=conn.prepareStatement(sql3);
+				pstmt.setInt(1,dto.getNum());
+				
 				return pstmt.executeUpdate();
 			}catch(Exception e) {
 				e.printStackTrace();
@@ -142,6 +160,7 @@ public class Board_DAO {
 			List list = new ArrayList();
 				try {
 					conn=ds.getConnection();
+					// 전체게시글에서 게시글 번호를 순서로 가져옴.
 					String sql="select * from (select rownum r,num,writer,bfile,title,content,boardreg,ip,readcount,likes from (select * from board) order by num desc)";
 					pstmt=conn.prepareStatement(sql);
 					rs=pstmt.executeQuery();
@@ -175,6 +194,7 @@ public class Board_DAO {
 			try {
 				conn=ds.getConnection();
 				String sql=null;
+				//검색을 했을 경우에 게시글 번호 순으로 가져오기.
 				if(sel.equals("all")) {
 					sql="select * from (select rownum r,num,writer,bfile,title,content,boardreg,ip,readcount,likes from (select * from board where title like '%"+search+"%'or content like '%"+search+"%'or writer like '%"+search+"%' order by num desc))";
 				}else {
@@ -212,6 +232,7 @@ public class Board_DAO {
 			List list = new ArrayList();
 			try {
 				conn=ds.getConnection();
+				//나 게시판에 글 가져오기.
 				String sql="select * from (select rownum r,num,writer,bfile,title,content,boardreg,ip,readcount,likes from (select * from board) where writer=? order by num desc)";
 				pstmt=conn.prepareStatement(sql);
 				pstmt.setString(1, id);
@@ -246,6 +267,7 @@ public class Board_DAO {
 			try {
 				conn=ds.getConnection();
 				for(int i=0;i<numlist.size();i++) {
+					//좋아요 게시판에서 글 가져오기.
 					String sql="select * from (select rownum r,num,writer,bfile,title,content,boardreg,ip,readcount,likes from (select * from board) where num=? order by num desc)";
 					pstmt=conn.prepareStatement(sql);
 					pstmt.setInt(1, (int)numlist.get(i));
@@ -306,117 +328,7 @@ public class Board_DAO {
 			return bdto;
 		}
 		
-///////////////////////////////////////////////////////////////////////////////////////////////////////////		
 
-		// 댓글 달기
-		public void insertComment (Board_DTO dto) {
-			int commen_num = dto.getCommen_num();
-			int ref = dto.getRef();
-			int re_step = dto.getRe_step();		
-			int re_level = dto.getRe_level();
-			String sql = "";
-			try {
-				conn = ds.getConnection();
-				
-				if(commen_num != 0) {
-					sql = "update commen set re_step=re_step+1 where ref=? and re_step > ?";
-					pstmt = conn.prepareStatement(sql);
-					pstmt.setInt(1, ref);
-					pstmt.setInt(2, re_step);
-					pstmt.executeUpdate();
-					re_step += 1;
-					re_level += 1;
-				}else {
-					re_step = 0;
-					re_level = 0;
-				}
-				sql = "insert into commen values(commen_seq.nextVal,?,?,?,?,?,?,?)";
-				pstmt = conn.prepareStatement(sql);				
-				pstmt.setInt(1, dto.getNum());				
-				pstmt.setString(2, dto.getWriter());
-				pstmt.setString(3, dto.getCommen());
-				pstmt.setInt(4, re_step);
-				pstmt.setInt(5, re_level);
-				pstmt.setInt(6, ref);				
-				pstmt.setTimestamp(7, dto.getCommen_reg());
-				
-				pstmt.executeUpdate();					
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally {
-				close(conn, pstmt, rs);
-			}
-		}
-		// 댓글단 게시물의 수 확인
-		public int getCommentCount(int num) {
-			int x = 0;
-			try {
-				conn = ds.getConnection();
-				String sql = "select count(*) from commen where num = ?";
-				pstmt = conn.prepareStatement(sql);
-				pstmt.setInt(1, num);
-				rs = pstmt.executeQuery();
-				if(rs.next()) {
-					x = rs.getInt(1);
-				}			
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally {
-				close(conn, pstmt, rs);
-			}
-			return x;
-		}
-		// 댓글 확인하여 보여주기
-		public List getComment(int num) {
-			List commenList = null;
-			try {
-				conn = ds.getConnection();
-				
-				String sql = "select * from (select commen_num,num, writer, commen, re_step, re_level, ref, commenreg from (select * from commen where num = ? by num desc)";
-				pstmt = conn.prepareStatement(sql);
-				pstmt.setInt(1, num);
-				rs = pstmt.executeQuery();
-				if(rs.next()) {
-					commenList = new ArrayList();
-					do {
-						Board_DTO dto = new Board_DTO();
-						dto.setCommen_num(rs.getInt("commen_num"));
-						dto.setNum(rs.getInt("num"));
-						dto.setWriter(rs.getString("writer"));
-						dto.setCommen(rs.getString("commen"));
-						dto.setRe_step(rs.getInt("re_step"));
-						dto.setRe_level(rs.getInt("re_level"));
-						dto.setRef(rs.getInt("ref"));
-						dto.setCommen_reg(rs.getTimestamp("commen_reg"));
-						commenList.add(dto);
-					}while(rs.next());
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally {
-				close(conn, pstmt, rs);
-			}
-			return commenList;
-		}
-		
-		// 댓글 삭제 하기
-		
-				public void delete_commen(Board_DTO dto) {
-					try{
-						conn=ds.getConnection();
-						String sql="delete from commen where commen_num=? and num =?";
-						pstmt=conn.prepareStatement(sql);
-						pstmt.setInt(1,dto.getCommen_num());
-						pstmt.setInt(2, dto.getNum());
-						pstmt.executeUpdate();
-					}catch(Exception e) {
-						e.printStackTrace();
-					}finally {
-						close(conn, pstmt, rs);
-					}
-				}	
-		
-	
 		
 		//전체 닫기
 		public void close(Connection conn,PreparedStatement pstmt,ResultSet rs) {

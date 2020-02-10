@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <title>Insert title here</title>
 </head>
+<jsp:include page="../logxx.jsp"></jsp:include>
 <%
 	request.setCharacterEncoding("UTF-8"); 
 	String id = (String)session.getAttribute("sId");	
@@ -15,7 +16,7 @@
 	int result = fdao.add_friend(id, search_id); 
 	if(result == 1){%>
 		<script>
-			alert("친구추가가 완료되었습니다.");
+			alert("친구 신청이 완료되었습니다.");
 			window.close();
 		</script>
 	<%}else if(result == 0){ %>
@@ -28,7 +29,6 @@
 
 
 <body>
-<jsp:include page="../logxx.jsp"></jsp:include>
 
 </body>
 </html>

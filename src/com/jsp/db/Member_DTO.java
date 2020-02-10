@@ -7,35 +7,26 @@ public class Member_DTO {
 	private String id;
 	private String pw;
 	private String name;
-	private String rrn1;
-	private String rrn2;
+	private String rrn;
 	private String email;
-	private String phone1;
-	private String phone2;
-	private String phone3;
-	
-	public String getPhone1() {
-		return phone1;
+	private String phone;
+	private String home;
+	private String file;
+
+	public String getHome() {
+		return home;
 	}
 
-	public void setPhone1(String phone1) {
-		this.phone1 = phone1;
+	public void setHome(String home) {
+		this.home = home;
 	}
 
-	public String getPhone2() {
-		return phone2;
+	public String getFile() {
+		return file;
 	}
 
-	public void setPhone2(String phone2) {
-		this.phone2 = phone2;
-	}
-
-	public String getPhone3() {
-		return phone3;
-	}
-
-	public void setPhone3(String phone3) {
-		this.phone3 = phone3;
+	public void setFile(String file) {
+		this.file = file;
 	}
 
 	public Member_DTO() {
@@ -60,27 +51,28 @@ public class Member_DTO {
 		this.name = name;
 	}
 
-	public String getRrn1() {
-		return rrn1;
-	}
-
-	public void setRrn1(String rrn1) {
-		this.rrn1 = rrn1;
-	}
-
-	public String getRrn2() {
-		return rrn2;
-	}
-
-	public void setRrn2(String rrn2) {
-		this.rrn2 = rrn2;
-	}
-
 	public String getEmail() {
 		return email;
 	}
 	public void setEmail(String email) {
 		this.email = email;
 	}
+
+	public String getRrn() {
+		return rrn;
+	}
+
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+	
 	
 }

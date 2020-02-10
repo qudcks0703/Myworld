@@ -44,7 +44,7 @@
 			session.setAttribute("sId", id);%>
 			<script type="text/javascript">
 				alert('로그인 성공');
-				location.href="../index.jsp";			
+				location.href="/bb/index.jsp";			
 			</script>
 			
 		<% }else if(check==0){	%>

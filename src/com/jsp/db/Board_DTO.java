@@ -12,38 +12,8 @@ public class Board_DTO {
 	private Timestamp boardReg;
 	private int readcount;	
 	private String ip;
-	private int ref;	
-	private int re_step;
-	private int re_level;
 	private String r;
 	private int likes;
-	private int commen_num;
-	private Timestamp commen_reg;
-	
-	
-	public Timestamp getCommen_reg() {
-		return commen_reg;
-	}
-	public void setCommen_reg(Timestamp commen_reg) {
-		this.commen_reg = commen_reg;
-	}
-	public int getCommen_num() {
-		return commen_num;
-	}
-	public void setCommen_num(int commen_num) {
-		this.commen_num = commen_num;
-	}
-	private String commen;
-	
-	
-	
-	public String getCommen() {
-		return commen;
-	}
-	public void setCommen(String commen) {
-		this.commen = commen;
-	}
-		
 	
 	public int getLikes() {
 		return likes;
@@ -117,22 +87,4 @@ public class Board_DTO {
 	public void setIp(String ip) {
 		this.ip = ip;
 	}
-	public int getRef() {
-		return ref;
-	}
-	public void setRef(int ref) {
-		this.ref = ref;
-	}
-	public int getRe_step() {
-		return re_step;
-	}
-	public void setRe_step(int re_step) {
-		this.re_step = re_step;
-	}
-	public int getRe_level() {
-		return re_level;
-	}
-	public void setRe_level(int re_level) {
-		this.re_level = re_level;
-	}	
-}
+  }

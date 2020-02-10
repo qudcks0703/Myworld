@@ -13,17 +13,22 @@
 	request.setCharacterEncoding("UTF-8");
 	String id=request.getParameter("id");	
 	String friend=request.getParameter("friend");
-	Friend_DAO fdao=Friend_DAO.getInstance();
-	int result=fdao.no_friend(id, friend);
+	Friend_DAO fdao=Friend_DAO.getInstance();%>
+	
+	<script>
+		
+	
+	</script>
+	
+	<%int result=fdao.friend_delete(id, friend);
 	if(result==1){%>
 		<script type="text/javascript">
-			alert("친구 거절 성공");
+			alert("친구 삭제 성공");
 			window.close();
 		</script>
 	<%}else{%>
 		<script type="text/javascript">
-			alert("친구 거절 실패");
-			window.close();
+			alert("친구 삭제 실패");
 		</script>
 	<%}%>
 <body>

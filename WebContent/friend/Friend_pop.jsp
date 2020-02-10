@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <title>Insert title here</title>
 </head>
+<jsp:include page="../logxx.jsp"></jsp:include>
 <%
 	request.setCharacterEncoding("UTF-8");
 	String search_id = request.getParameter("search_id");
@@ -17,7 +18,6 @@
 %>
 
 <body>
-<jsp:include page="../logxx.jsp"></jsp:include>
 	<form>
 		<table>
 			<tr>
@@ -25,7 +25,7 @@
 			</tr>		
 			<tr>
 				<td text-align = "right">
-					<input type ="button" onclick = "window.location.href='/Team/friend/Friend_ok.jsp?search_id=<%=search_id%>'" value ="친구요청"></input>
+					<input type ="button" onclick = "window.location.href='/bb/friend/Friend_ok.jsp?search_id=<%=search_id%>'" value ="친구요청"></input>
 					<input type ="button" onclick = "window.close()" value ="취소"></input>
 				</td>
 			</tr>		

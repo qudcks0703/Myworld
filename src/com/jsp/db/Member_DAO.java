@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -63,14 +65,16 @@ public class Member_DAO {
 		public int siunup(Member_DTO mdto) {
 			try {
 				conn=ds.getConnection();
-				String sql="insert into member values(?,?,?,?,?,?)";
+				String sql="insert into member values(?,?,?,?,?,?,?,?)";
 				pstmt=conn.prepareStatement(sql);
 				pstmt.setString(1, mdto.getId());
 				pstmt.setString(2, mdto.getPw());
 				pstmt.setString(3, mdto.getName());
-				pstmt.setString(4, mdto.getRrn1()+"-"+mdto.getRrn2());
+				pstmt.setString(4, mdto.getRrn());
 				pstmt.setString(5, mdto.getEmail());
-				pstmt.setString(6, mdto.getPhone1()+"-"+mdto.getPhone2()+"-"+mdto.getPhone3());
+				pstmt.setString(6, mdto.getPhone());
+				pstmt.setString(7, mdto.getHome());
+				pstmt.setString(8, mdto.getFile());
 				return pstmt.executeUpdate();
 			}catch(Exception e) {
 				e.printStackTrace();
@@ -95,14 +99,11 @@ public class Member_DAO {
 					mdto.setId(rs.getString("id"));
 					mdto.setPw(rs.getString("pw"));
 					mdto.setName(rs.getString("name"));
-					String[] a=rs.getString("rrn").split("-");
-					mdto.setRrn1(a[0]);
-					mdto.setRrn2(a[1]);
+					mdto.setRrn(rs.getString("rrn"));
+					mdto.setPhone(rs.getString("phone"));
 					mdto.setEmail(rs.getString("email"));
-					String[] b=rs.getString("phone").split("-");
-					mdto.setPhone1(b[0]);
-					mdto.setPhone2(b[1]);
-					mdto.setPhone3(b[2]);
+					mdto.setHome(rs.getString("home"));
+					mdto.setFile(rs.getString("mfile"));
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -112,17 +113,45 @@ public class Member_DAO {
 			}
 			return mdto;
 		}
+		//전체 아이디 목록가져오기
+		public List getAlldto() {
+			List list=new ArrayList();
+			try {
+				conn=ds.getConnection();
+				String sql="select * from member";
+				pstmt=conn.prepareStatement(sql);
+				rs=pstmt.executeQuery(); 
+				while(rs.next()) {
+					mdto=new Member_DTO();
+					mdto.setId(rs.getString("id"));
+					mdto.setPw(rs.getString("pw"));
+					mdto.setName(rs.getString("name"));
+					mdto.setRrn(rs.getString("rrn"));
+					mdto.setPhone(rs.getString("phone"));
+					mdto.setEmail(rs.getString("email"));
+					list.add(mdto);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("아이디 정보 가져오기 실패");
+			}finally {
+				close(conn, pstmt, rs);
+			}
+			return list;
+		}
 		
 		// 아이디 수정하기
 		public int update(Member_DTO dto) {
 			try {
 				conn=ds.getConnection();
-				String sql="update member set pw=?,email=?,phone=? where id=?";
+				String sql="update member set pw=?,email=?,phone=?,home=?,mfile=? where id=?";
 				pstmt=conn.prepareStatement(sql);
 				pstmt.setString(1, dto.getPw());
 				pstmt.setString(2, dto.getEmail());
-				pstmt.setString(3, dto.getPhone1()+"-"+dto.getPhone2()+"-"+dto.getPhone3());
-				pstmt.setString(4, dto.getId());
+				pstmt.setString(3, dto.getPhone());
+				pstmt.setString(4, dto.getHome());
+				pstmt.setString(5, dto.getFile());
+				pstmt.setString(6, dto.getId());
 				return pstmt.executeUpdate();  //성공
 			}catch(Exception e) {
 				e.printStackTrace();
@@ -139,11 +168,38 @@ public class Member_DAO {
 		public void delete(String id) {
 			try {
 				conn=ds.getConnection();
+				String sql1="delete from friend where id=? or friend_id=?";
+				pstmt=conn.prepareStatement(sql1);
+				pstmt.setString(1, id);
+				pstmt.setString(2, id);
+				pstmt.executeUpdate();
 				
-				String sql="delete from member where id=?";
-				pstmt=conn.prepareStatement(sql);
+				String sql2="delete from mes where id=? or friend=?";
+				pstmt=conn.prepareStatement(sql2);
+				pstmt.setString(1, id);
+				pstmt.setString(2, id);
+				pstmt.executeUpdate();
+				
+				String sql3="delete from board where writer=?";
+				pstmt=conn.prepareStatement(sql3);
+				pstmt.setString(1, id);
+				pstmt.executeUpdate();
+				
+				String sql4="delete from likes where id=?";
+				pstmt=conn.prepareStatement(sql4);
+				pstmt.setString(1, id);
+				pstmt.executeUpdate();
+				
+				String sql5="delete from comment1 where writer=?";
+				pstmt=conn.prepareStatement(sql5);
+				pstmt.setString(1, id);
+				pstmt.executeUpdate();
+				
+				String sql6="delete from member where id=?";
+				pstmt=conn.prepareStatement(sql6);
 				pstmt.setString(1, id);
 				pstmt.executeUpdate(); //삭제 성공
+				
 			}catch(Exception e) {
 				e.printStackTrace();
 				System.out.println("아이디 삭제 실패");
@@ -152,6 +208,7 @@ public class Member_DAO {
 			}
 		}
 		
+		//중복 검사
 		public boolean checkid(String id) {
 			try {
 				conn=ds.getConnection();
@@ -171,6 +228,70 @@ public class Member_DAO {
 			return false;
 		}
 		
+		// profile보기 메서드 만들기
+		
+		// 해당 아이디에 대한 친구수 찾기
+		public int getProfileFriendCount(String id) {
+			int result = 0;
+			try {
+				conn=ds.getConnection();
+				String sql = "select count(*) from friend where (id=? and my_num=1 and friend_num=1) or (friend_id=? and my_num=1 and friend_num=1)";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, id);
+				pstmt.setString(2, id);
+				rs = pstmt.executeQuery();
+				if(rs.next()) {	
+					result = rs.getInt("count(*)");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				result = -1;
+			}finally{
+				close(conn, pstmt, rs);
+			}
+			return result;
+		}
+		
+		// 해당 아이디에 대한 게시글 수
+		public int getProfileBoardCount(String id) {
+			int result = 0;
+			try {
+				conn=ds.getConnection();
+				String sql = "select count(num) from board where writer = ?";
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setString(1, id);
+				rs = pstmt.executeQuery();
+				if(rs.next()) {					
+					result = rs.getInt("count(num)");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				result = -1;
+			}finally{
+				close(conn, pstmt, rs);
+			}
+			return result;
+		}
+		
+		// 해당 아이디에 대한 사진 가져오기
+		public String getProfilePhoto(String id) {
+			String result = "";
+			try {
+				conn=ds.getConnection();
+				String sql = "select photoFile from member where id = ?";
+				pstmt = conn.prepareStatement(sql);
+				rs = pstmt.executeQuery();
+				if(rs.next()) {		
+					result = rs.getString("photoFile");
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				result = "false";
+			}finally{
+				close(conn, pstmt, rs);
+			}
+			return result;
+		}
 		
 		
 		//전체 닫기

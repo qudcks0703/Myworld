@@ -7,6 +7,7 @@
 <meta charset="UTF-8">
 <title>Insert title here</title>
 </head>
+<jsp:include page="../logxx.jsp"></jsp:include>
 <%
 	request.setCharacterEncoding("UTF-8"); 
 	String id = request.getParameter("id");	
@@ -28,7 +29,6 @@
 
 
 <body>
-<jsp:include page="../logxx.jsp"></jsp:include>
 
 </body>
 </html>

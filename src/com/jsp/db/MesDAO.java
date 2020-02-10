@@ -37,28 +37,53 @@ public class MesDAO {
 		}
 		
 	
-	public void insertArticle(String id,String friend,String mes) {
+		//메세지 입력
+	public int insertArticle(String id,String friend,String mes) {
 		try {
 			conn =ds.getConnection();
-			String sql ="insert into mes values(?,?,?,0)";
+			String sql ="insert into mes values(?,?,?,0,sysdate)";
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(1, id);
 			pstmt.setString(2, friend);
 			pstmt.setString(3, mes);
-			pstmt.executeUpdate();
+			return pstmt.executeUpdate();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}finally {
 			close(conn, pstmt, rs);
 		}
+		return -1;
 	
 	}
 	
+	//메세지 갯수
+	public int mes_count(String id,String friend) {
+		try {
+			conn =ds.getConnection();
+			String sql ="select count(*) from mes where (id=? and friend=?) or (friend=? and id=?)";
+			pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, id);
+			pstmt.setString(2, friend);
+			pstmt.setString(3, id);
+			pstmt.setString(4, friend);
+			rs=pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt("count(*)");
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+		}finally {
+			close(conn, pstmt, rs);
+		}
+		return 0;
+	}
+	
+	//메세지 가져오기
 	public List selectmes(String id,String friend) {
 		List list=new ArrayList();
 		try {
 			conn =ds.getConnection();
-			String sql ="select * from mes where (id=? and friend =?) or (friend=? and id =?)";
+			String sql ="select * from mes where (id=? and friend =?) or (friend=? and id =?) order by reg";
 			pstmt=conn.prepareStatement(sql);
 			pstmt.setString(1, id);
 			pstmt.setString(2, friend);
@@ -70,7 +95,8 @@ public class MesDAO {
 				mdto.setId(rs.getString(1));
 				mdto.setFriend(rs.getString(2));
 				mdto.setMes(rs.getString("mes"));
-				list.add(mdto);
+				mdto.setReg(rs.getTimestamp("reg"));
+				list.add(mdto); 
 			}
 		}catch(Exception e) {
 			e.printStackTrace(); 
@@ -78,8 +104,34 @@ public class MesDAO {
 			close(conn, pstmt, rs);
 		}
 		return list;
-		
 	}
+	
+	public MesDTO2 selectmes_max(String id,String friend) {
+		try {
+			conn =ds.getConnection();
+			String sql ="select * from mes where (id=? and friend =?) or (friend=? and id =?) and reg=(select max(reg) from mes)";
+			pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, id);
+			pstmt.setString(2, friend);
+			pstmt.setString(3, id);
+			pstmt.setString(4, friend);
+			rs=pstmt.executeQuery();
+			if(rs.next()) {
+				mdto=new MesDTO2();
+				mdto.setId(rs.getString(1));
+				mdto.setFriend(rs.getString(2));
+				mdto.setMes(rs.getString("mes"));
+				mdto.setReg(rs.getTimestamp("reg"));
+			}
+		}catch(Exception e) {
+			e.printStackTrace(); 
+		}finally {
+			close(conn, pstmt, rs);
+		}
+		return mdto;
+	}
+	
+	//모든 메세지 삭제
 	public void deletemes(String id,String friend) {
 		try {
 			conn =ds.getConnection();
@@ -97,6 +149,8 @@ public class MesDAO {
 		}
 		
 	}
+	
+	// 메세지 도착현황 see=0(=아직 안본상태)
 	public String check(String id) {
 		List list=new ArrayList();
 		String friend="";
@@ -117,6 +171,8 @@ public class MesDAO {
 		return friend;
 		
 	}
+	
+	//메세지 확인시 see=1로 변경 봄
 	public void check_ok(String id,String friend) {
 		try {
 			conn =ds.getConnection();
@@ -130,6 +186,26 @@ public class MesDAO {
 		}finally {
 			close(conn, pstmt, rs);
 		}
+		
+	}
+	//메세지 갯수확인
+	public int count_mes(String id,String friend) {
+		try {
+			conn =ds.getConnection();
+			String sql ="select count(*) from mes where id=? and friend=? and see=0";
+			pstmt=conn.prepareStatement(sql);
+			pstmt.setString(1, friend);
+			pstmt.setString(2, id);
+			rs=pstmt.executeQuery();
+			if(rs.next()) {
+				return rs.getInt("count(*)");
+			}
+		}catch(Exception e) {
+			e.printStackTrace(); 
+		}finally {
+			close(conn, pstmt, rs);
+		}
+		return 0;
 		
 	}
 	

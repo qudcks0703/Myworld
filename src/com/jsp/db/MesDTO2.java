@@ -1,12 +1,23 @@
 package com.jsp.db;
 
+import java.sql.Timestamp;
 
 public class MesDTO2 {
 
 	private String mes;
 	private String id;
 	private String friend;
+	private Timestamp reg;
 	
+	
+	
+	
+	public Timestamp getReg() {
+		return reg;
+	}
+	public void setReg(Timestamp reg) {
+		this.reg = reg;
+	}
 	public String getMes() {
 		return mes;
 	}
