@@ -1,4 +1,6 @@
 Project Name : Myworld SNS 
+Term: 2020-01.01/2020-02.05
+Develop environment
 - OS : Window 10
 - Development Tool : Eclipse 
 - Framework : BootStrap
