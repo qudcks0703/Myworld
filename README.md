@@ -1,4 +1,4 @@
-Project Nanme : Myworld SNS 
+Project Name : Myworld SNS 
 - OS : Window 10
 - Development Tool : Eclipse 
 - Framework : BootStrap
