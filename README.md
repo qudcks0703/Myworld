@@ -1,11 +1,11 @@
-<h3>Project Name : Myworld SNS (2020-01.01/2020-02.05)</h3><br/><br/>
+<h3>Project Name : Myworld SNS (2020-01.01/2020-02.05)</h3>
 <h4>Develop environment</h4>
-- OS : Window 10
-- Development Tool : Eclipse 
-- Framework : BootStrap
-- Language/Skills : Java /Javascript /Jquery /HTML /CSS
-- DB : Oracle SQL
-- Configuration management : Git
+- OS : Window 10<br/>
+- Development Tool : Eclipse <br/>
+- Framework : BootStrap<br/>
+- Language/Skills : Java /Javascript /Jquery /HTML /CSS<br/>
+- DB : Oracle SQL<br/>
+- Configuration management : Git<br/>
 
 <h4>팀 인원:</h4> 2명
 
