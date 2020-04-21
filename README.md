@@ -5,7 +5,7 @@
  <li>Development Tool : Eclipse </li>
  <li>Framework : BootStrap</li>
  <li>Language/Skills : Java /Javascript /Jquery /HTML /CSS</li>
- <li>DB : Oracle SQL</li>
+ <li>DB : Oracle DB</li>
  <li>Configuration management : Git</li>
  </ul>
 
